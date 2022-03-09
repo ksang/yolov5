@@ -1,0 +1,4 @@
+name: yolov5
+dependencies:
+  - python=3.9
+  
