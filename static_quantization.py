@@ -1,4 +1,5 @@
 import os
+import torch
 import numpy as np
 from PIL import Image
 
@@ -13,11 +14,13 @@ class DataReader(CalibrationDataReader):
         self.preprocess_flag = True
         self.enum_data_dicts = []
         self.datasize = 0
+        cuda = torch.cuda.is_available()
+        self.providers = ['CUDAExecutionProvider', 'CPUExecutionProvider'] if cuda else ['CPUExecutionProvider']
 
     def get_next(self):
         if self.preprocess_flag:
             self.preprocess_flag = False
-            session = onnxruntime.InferenceSession(self.augmented_model_path, None)
+            session = onnxruntime.InferenceSession(self.augmented_model_path, providers=self.providers)
             (_, height, width, _) = session.get_inputs()[0].shape
             nhwc_data_list = preprocess_func(self.image_folder, height, width, size_limit=0)
             input_name = session.get_inputs()[0].name
