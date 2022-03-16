@@ -47,15 +47,13 @@ def preprocess_func(images_folder, height, width, size_limit=0):
 
     for image_name in batch_filenames:
         image_filepath = images_folder + '/' + image_name
-        # pillow_img = Image.new("RGB", (width, height))
-        img = cv2.imread(image_filepath)
-        pillow_img.paste(Image.open(image_filepath).resize((width, height)))
-        # input_data = np.float32(pillow_img) - \
-        # np.array([123.68, 116.78, 103.94], dtype=np.float32)
-        # input_data = np.array(pillow_img).astype('int64')
-        nhwc_data = np.expand_dims(input_data, axis=0)
-        nchw_data = np.transpose(nhwc_data, (0, 3, 1, 2))
-        unconcatenated_batch_data.append(nchw_data)
+        im = cv2.imread(image_filepath)
+        im = cv2.resize(im, (width, height))
+        im = np.expand_dims(im, axis=0)
+        im = np.transpose(im, (0, 3, 1, 2))
+        im = im.astype(np.float32)  # uint8 to fp16/32
+        im /= 255  # 0 - 255 to 0.0 - 1.0
+        unconcatenated_batch_data.append(im)
     batch_data = np.concatenate(np.expand_dims(unconcatenated_batch_data, axis=0), axis=0)
     return batch_data
 
